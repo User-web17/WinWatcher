@@ -13,10 +13,16 @@ namespace WinWatcher
         private ProcessTracker processTracker;
         private ModerationService moderationService;
         private System.Windows.Forms.Timer moderationTimer;
+        private int allowedTabIndex = 0;
+        private int keyCount = 0;
+        private int appCount = 0;
+        private int warningCount = 0;
+
         public Form1()
         {
             InitializeComponent();
-            cbEnableModeration_CheckedChanged(null, null);
+            cbEnableModeration.CheckedChanged += cbEnableModeration_CheckedChanged;
+            tbControl.Selecting += tbControl_Selecting;
         }
         private void btnBrowseFiles_Click(object sender, EventArgs e)
         {
@@ -59,6 +65,7 @@ namespace WinWatcher
 
         private void btnStartMonitoring_Click(object sender, EventArgs e)
         {
+            allowedTabIndex = 1;
             tbControl.SelectedIndex = 1;
 
             lblMonitoring.Text = "Monitoring is running...";
@@ -68,7 +75,7 @@ namespace WinWatcher
 
             if (settings.TrackKeyboard)
             {
-                keyboardTracker = new KeyboardTracker(keyLogPath);
+                keyboardTracker = new KeyboardTracker(keyLogPath, OnKeyPressed);
                 keyboardTracker.Start();
             }
 
@@ -102,6 +109,10 @@ namespace WinWatcher
             keyboardTracker?.Stop();
             processTracker?.Stop();
             moderationTimer?.Stop();
+
+            allowedTabIndex = 2;
+
+            tbControl.SelectedIndex = 2;
 
             UpdateReportButtons();
         }
@@ -145,6 +156,30 @@ namespace WinWatcher
 
             txtBlockedWords.Enabled = enabled;
             txtBlockedPrograms.Enabled = enabled;
+        }
+        private void OnKeyPressed(string key)
+        {
+            keyCount++;
+            lblKeysLogged.Text = $"Keys logged: {keyCount}";
+
+            int before = warningCount;
+
+            moderationService?.CheckKey(key);
+
+            if (File.Exists(moderationLogPath))
+            {
+                int lines = File.ReadAllLines(moderationLogPath).Length;
+                if (lines > warningCount)
+                {
+                    warningCount = lines;
+                    lblWarnings.Text = $"Warnings: {warningCount}";
+                }
+            }
+        }
+        private void tbControl_Selecting(object sender, TabControlCancelEventArgs e)
+        {
+            if (e.TabPageIndex > allowedTabIndex)
+                e.Cancel = true;
         }
     }
 }

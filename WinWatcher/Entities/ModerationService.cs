@@ -22,7 +22,12 @@ namespace WinWatcher.Entities
 
         public void CheckKey(string key)
         {
-            currentBuffer += key.ToLower();
+            string processedKey = ProcessKey(key);
+
+            if (string.IsNullOrEmpty(processedKey))
+                return;
+
+            currentBuffer += processedKey;
 
             foreach (var word in blockedWords)
             {
@@ -38,6 +43,19 @@ namespace WinWatcher.Entities
             if (currentBuffer.Length > 100)
                 currentBuffer = "";
         }
+        private string ProcessKey(string key)
+        {
+            if (key.Length == 1)
+                return key.ToLower();
+
+            if (key == "Space")
+                return " ";
+
+            if (key.StartsWith("D") && key.Length == 2)
+                return key[1].ToString(); // D1 → "1"
+
+            return "";
+        }
 
         public void CheckProcesses()
         {
@@ -47,7 +65,8 @@ namespace WinWatcher.Entities
             {
                 try
                 {
-                    if (blockedPrograms.Contains(p.ProcessName))
+                    if (blockedPrograms.Any(bp =>
+    bp.Equals(p.ProcessName, StringComparison.OrdinalIgnoreCase)))
                     {
                         File.AppendAllText(logPath,
                             $"Blocked app closed: {p.ProcessName} at {DateTime.Now}\n");
