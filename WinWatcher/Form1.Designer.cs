@@ -105,7 +105,7 @@
             btnStartMonitoring.TabIndex = 6;
             btnStartMonitoring.Text = "Start Monitoring";
             btnStartMonitoring.UseVisualStyleBackColor = true;
-            btnStartMonitoring.Click += btnStartMonitoring_Click_1;
+            btnStartMonitoring.Click += btnStartMonitoring_Click;
             // 
             // gbFileSettings
             // 
@@ -215,6 +215,7 @@
             cbEnableModeration.TabIndex = 3;
             cbEnableModeration.Text = "Enable Moderation";
             cbEnableModeration.UseVisualStyleBackColor = true;
+            cbEnableModeration.CheckedChanged += cbEnableModeration_CheckedChanged;
             // 
             // cbEnableStatistics
             // 
@@ -297,6 +298,7 @@
             btnStopMonitoring.TabIndex = 2;
             btnStopMonitoring.Text = "Stop Monitoring";
             btnStopMonitoring.UseVisualStyleBackColor = true;
+            btnStopMonitoring.Click += btnStopMonitoring_Click;
             // 
             // lblMonitoring
             // 
@@ -347,6 +349,7 @@
             btnOpenKeyLogFile.TabIndex = 0;
             btnOpenKeyLogFile.Text = "Open Key Log File";
             btnOpenKeyLogFile.UseVisualStyleBackColor = true;
+            btnOpenKeyLogFile.Click += btnOpenKeyLogFile_Click;
             // 
             // btnOpenModerationReport
             // 
@@ -356,6 +359,7 @@
             btnOpenModerationReport.TabIndex = 2;
             btnOpenModerationReport.Text = "Open Moderation Report";
             btnOpenModerationReport.UseVisualStyleBackColor = true;
+            btnOpenModerationReport.Click += btnOpenModerationReport_Click;
             // 
             // btnOpenAppLogFile
             // 
@@ -365,6 +369,7 @@
             btnOpenAppLogFile.TabIndex = 1;
             btnOpenAppLogFile.Text = "Open App Log File";
             btnOpenAppLogFile.UseVisualStyleBackColor = true;
+            btnOpenAppLogFile.Click += btnOpenAppLogFile_Click;
             // 
             // Form1
             // 

@@ -1,3 +1,5 @@
+using WinWatcher.Entities;
+
 namespace WinWatcher
 {
     public partial class Form1 : Form
@@ -7,9 +9,14 @@ namespace WinWatcher
         private string keyLogPath;
         private string appLogPath;
         private string moderationLogPath;
+        private KeyboardTracker keyboardTracker;
+        private ProcessTracker processTracker;
+        private ModerationService moderationService;
+        private System.Windows.Forms.Timer moderationTimer;
         public Form1()
         {
             InitializeComponent();
+            cbEnableModeration_CheckedChanged(null, null);
         }
         private void btnBrowseFiles_Click(object sender, EventArgs e)
         {
@@ -50,9 +57,94 @@ namespace WinWatcher
             MessageBox.Show("Settings saved!");
         }
 
-        private void btnStartMonitoring_Click_1(object sender, EventArgs e)
+        private void btnStartMonitoring_Click(object sender, EventArgs e)
         {
             tbControl.SelectedIndex = 1;
+
+            lblMonitoring.Text = "Monitoring is running...";
+            pbMonitoringProgress.Style = ProgressBarStyle.Marquee;
+
+            Directory.CreateDirectory(settings.ReportFolderPath);
+
+            if (settings.TrackKeyboard)
+            {
+                keyboardTracker = new KeyboardTracker(keyLogPath);
+                keyboardTracker.Start();
+            }
+
+            if (settings.TrackApps)
+            {
+                processTracker = new ProcessTracker(appLogPath);
+                processTracker.Start();
+            }
+
+            if (settings.EnableModeration)
+            {
+                moderationService = new ModerationService(
+                    settings.BlockedWords,
+                    settings.BlockedPrograms,
+                    moderationLogPath);
+
+                moderationTimer = new System.Windows.Forms.Timer();
+                moderationTimer.Interval = 3000;
+                moderationTimer.Tick += (s, ev) =>
+                {
+                    moderationService.CheckProcesses();
+                };
+                moderationTimer.Start();
+            }
+        }
+        private void btnStopMonitoring_Click(object sender, EventArgs e)
+        {
+            lblMonitoring.Text = "Monitoring stopped...";
+            pbMonitoringProgress.Style = ProgressBarStyle.Blocks;
+
+            keyboardTracker?.Stop();
+            processTracker?.Stop();
+            moderationTimer?.Stop();
+
+            UpdateReportButtons();
+        }
+        private void UpdateReportButtons()
+        {
+            btnOpenKeyLogFile.Enabled =
+                settings.EnableStatistics &&
+                settings.TrackKeyboard &&
+                File.Exists(keyLogPath);
+
+            btnOpenAppLogFile.Enabled =
+                settings.EnableStatistics &&
+                settings.TrackApps &&
+                File.Exists(appLogPath);
+
+            btnOpenModerationReport.Enabled =
+                settings.EnableModeration &&
+                File.Exists(moderationLogPath);
+        }
+
+        private void btnOpenKeyLogFile_Click(object sender, EventArgs e)
+        {
+            if (File.Exists(keyLogPath))
+                System.Diagnostics.Process.Start("notepad.exe", keyLogPath);
+        }
+
+        private void btnOpenAppLogFile_Click(object sender, EventArgs e)
+        {
+            if (File.Exists(appLogPath))
+                System.Diagnostics.Process.Start("notepad.exe", appLogPath);
+        }
+
+        private void btnOpenModerationReport_Click(object sender, EventArgs e)
+        {
+            if (File.Exists(moderationLogPath))
+                System.Diagnostics.Process.Start("notepad.exe", moderationLogPath);
+        }
+        private void cbEnableModeration_CheckedChanged(object sender, EventArgs e)
+        {
+            bool enabled = cbEnableModeration.Checked;
+
+            txtBlockedWords.Enabled = enabled;
+            txtBlockedPrograms.Enabled = enabled;
         }
     }
 }
